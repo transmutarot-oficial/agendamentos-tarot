@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendamentos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '697293479204910');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=697293479204910&ev=PageView&noscript=1"
+    /></noscript>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: #000000; display: flex; justify-content: center; font-family: 'Montserrat', sans-serif; color: #ffffff; }
+        
+        /* Container principal simulando celular */
+        .site-mobile { width: 100%; max-width: 500px; display: flex; flex-direction: column; }
+        
+        /* Estilo padrão para todas as imagens empilhadas */
+        .site-mobile img.pagina-print { width: 100%; display: block; border: none; }
+        
+        /* Estilo específico para imagens com borda (feedback) */
+        .site-mobile img.borda-feedback { border: 3px solid #6f0000; width: 94%; margin: 15px auto; border-radius: 6px; box-shadow: 0 4px 10px rgba(255, 51, 51, 0.15); }
+        
+        /* --- ESTILOS DO FORMULÁRIO --- */
+        .form-container { padding: 30px 20px; background-color: #000000}
+        .form-group { margin-bottom: 25px; }
+        .form-group label { display: block; font-size: 0.95rem; margin-bottom: 8px; font-weight: 600; }
+        input[type="text"] { width: 100%; background-color: #000000; border: 1px solid #cccccc; color: #ffffff; padding: 12px; font-size: 1rem; outline: none; }
+        input[type="text"]:focus { border-color: #1ed760; }
+        .phone-input-wrapper { display: flex; align-items: center; border: 1px solid #cccccc; background-color: #000000; padding: 0 10px; }
+        .flag-icon { font-size: 1.2rem; margin-right: 10px; }
+        .phone-input-wrapper input { flex: 1; background: transparent; border: none; color: #ffffff; padding: 12px 0; font-size: 1rem; outline: none; }
+        .btn-submit { width: 100%; background-color: #1ed760; color: #ffffff; border: none; padding: 16px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
+        .btn-submit:hover { background-color: #1ab851; }
+        #msg-sucesso { display: none; color: #1ed760; text-align: center; margin-top: 15px; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <main class="site-mobile">
+        
+        <div id="image-container"></div>
+
+        <div class="form-container">
+            <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(enviado) { finalizarEnvio(); }"></iframe>
+
+            <form id="leadForm" action="https://docs.google.com/forms/d/e/1FAIpQLSdWJPb1HVbc7jZ0GocVR_1OOcOdH_sG1TOXwgtfuW-HovxGww/formResponse" method="POST" target="hidden_iframe">
+                <div class="form-group">
+                    <label for="nome">Nome *</label>
+                    <input type="text" id="nome" name="entry.1547982634" required>
+                </div>
+                <div class="form-group">
+                    <label for="telefone_visivel">Seu Telefone com DDD *</label>
+                    <div class="phone-input-wrapper">
+                        <span class="flag-icon"></span>
+                        <input type="text" id="telefone_visivel" placeholder="Ex: 11999999999" required>
+                    </div>
+                </div>
+                <input type="hidden" id="whatsapp_link" name="entry.1255704056">
+                <button type="submit" class="btn-submit" id="btn-enviar">Candidatar a uma vaga</button>
+                <div id="msg-sucesso">1 vaga encontrada!</div>
+            </form>
+        </div>
+
+        <img src="footer.png" alt="Rodapé" class="pagina-print">
+
+    </main>
+
+    <script>
+        // 1. Script para carregar até 40 imagens automaticamente com a regra da borda
+        const imageContainer = document.getElementById('image-container');
+        for (let i = 1; i <= 40; i++) {
+            const img = document.createElement('img');
+            img.src = `${i}.png`;
+            img.alt = `Parte ${i}`;
+            img.className = 'pagina-print';
+
+            // REGRA ATUALIZADA: Aplica a borda vermelha se a imagem for da 7 até a 20 OU se for a 31
+            if ((i >= 7 && i <= 20) || i === 31) {
+                img.classList.add('borda-feedback');
+            }
+
+            img.onerror = function() { this.style.display = 'none'; };
+            imageContainer.appendChild(img);
+        }
+
+        // 2. Lógica de Envio à prova de falhas (Iframe Oculto) e Rastreamento
+        let enviado = false;
+
+        document.getElementById('leadForm').addEventListener('submit', function(e) {
+            // Dispara evento de Lead no Pixel
+            fbq('track', 'Lead');
+            
+            const btn = document.getElementById('btn-enviar');
+            btn.innerText = 'Buscando...';
+            btn.style.opacity = '0.7';
+
+            // Pega o telefone digitado e limpa para enviar apenas números
+            const telefoneDigitado = document.getElementById('telefone_visivel').value;
+            const telefoneLimpo = telefoneDigitado.replace(/\D/g, '');
+            document.getElementById('whatsapp_link').value = telefoneLimpo;
+
+            // Avisa o iframe que o envio começou
+            enviado = true;
+        });
+
+        function finalizarEnvio() {
+            // Captura os parâmetros da URL atual (UTMs) para repassar para a Yampi
+            const queryString = window.location.search;
+            
+            // Define o link do checkout da Yampi
+            const checkoutBase = "https://transmutarot.pay.yampi.com.br/r/JGFZ2ZW4QC";
+            
+            // Monta a URL final preservando as tags de campanha
+            const urlFinal = queryString ? `${checkoutBase}${queryString}` : checkoutBase;
+            
+            document.getElementById('msg-sucesso').style.display = 'block';
+            
+            // Redireciona na mesma aba
+            window.location.href = urlFinal;
+        }
+    </script>
+</body>
+</html>
