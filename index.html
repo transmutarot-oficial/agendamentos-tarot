@@ -81,18 +81,19 @@
             </form>
         </div>
 
-        <img src="footer.png" alt="Rodapé" class="pagina-print">
+        <img src="footer.webp" alt="Rodapé" class="pagina-print" loading="lazy">
 
     </main>
 
     <script>
-        // 1. Script para carregar até 40 imagens automaticamente com a regra da borda
+        // 1. Script para carregar até 40 imagens automaticamente com a regra da borda e Lazy Loading
         const imageContainer = document.getElementById('image-container');
         for (let i = 1; i <= 40; i++) {
             const img = document.createElement('img');
-            img.src = `${i}.png`;
+            img.src = `${i}.webp`; /* Alterado para .webp */
             img.alt = `Parte ${i}`;
             img.className = 'pagina-print';
+            img.loading = 'lazy'; /* Adicionado o Lazy Loading para velocidade extrema */
 
             // REGRA ATUALIZADA: Aplica a borda vermelha se a imagem for da 7 até a 20 OU se for a 31
             if ((i >= 7 && i <= 20) || i === 31) {
