@@ -88,7 +88,18 @@
     <script>
         // 1. Script para carregar até 40 imagens automaticamente com a regra da borda e Lazy Loading
         const imageContainer = document.getElementById('image-container');
+        
+        // LISTA DE NÚMEROS DAS IMAGENS PARA PULAR
+        // Insira os números que deseja ignorar separados por vírgula. Ex: [1, 5, 10]
+        const imagensParaPular = [23,24,25]; 
+
         for (let i = 1; i <= 40; i++) {
+            
+            // Se o número da imagem atual estiver na lista 'imagensParaPular', o código pula para o próximo número
+            if (imagensParaPular.includes(i)) {
+                continue;
+            }
+
             const img = document.createElement('img');
             img.src = `${i}.webp`; /* Alterado para .webp */
             img.alt = `Parte ${i}`;
@@ -129,8 +140,8 @@
             const queryString = window.location.search;
             
             // Define o link do checkout da Yampi
-            // const checkoutBase = "https://transmutarot.pay.yampi.com.br/r/JGFZ2ZW4QC";
-            const checkoutBase = "https://wa.link/8vey4a";
+            const checkoutBase = "https://transmutarot.pay.yampi.com.br/r/JGFZ2ZW4QC";
+            // const checkoutBase = "https://wa.link/8vey4a";
             
             // Monta a URL final preservando as tags de campanha
             const urlFinal = queryString ? `${checkoutBase}${queryString}` : checkoutBase;
