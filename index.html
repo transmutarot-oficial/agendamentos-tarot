@@ -111,6 +111,11 @@
                 img.classList.add('borda-feedback');
             }
 
+            // NOVA REGRA: Aplica margin-top de 5px nas imagens 21 e 30
+            if (i === 21 || i === 30) {
+                img.style.marginTop = '5px';
+            }
+
             img.onerror = function() { this.style.display = 'none'; };
             imageContainer.appendChild(img);
         }
