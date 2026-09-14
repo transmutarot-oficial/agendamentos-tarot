@@ -6,6 +6,20 @@
     <title>Agendamentos</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     
+    <!-- 1. SCRIPT DE CORREÇÃO DO FBC (CLICK ID) -->
+    <script>
+        // Esse script captura o clique do anúncio (fbclid) da URL e cria o cookie no formato que a Meta exige
+        const urlParams = new URLSearchParams(window.location.search);
+        const fbclid = urlParams.get('fbclid');
+        
+        if (fbclid) {
+            // Se existir o fbclid na URL, criamos o cookie _fbc com validade de 90 dias
+            const creationTime = new Date().getTime();
+            const fbcValue = "fb.1." + creationTime + "." + fbclid;
+            document.cookie = "_fbc=" + fbcValue + "; path=/; max-age=" + (90 * 24 * 60 * 60);
+        }
+    </script>
+
     <script>
     !function(f,b,e,v,n,t,s)
     {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -89,32 +103,24 @@
     </main>
 
     <script>
-        // 1. Script para carregar até 40 imagens automaticamente com a regra da borda e Lazy Loading
         const imageContainer = document.getElementById('image-container');
-        
-        // LISTA DE NÚMEROS DAS IMAGENS PARA PULAR
-        // Insira os números que deseja ignorar separados por vírgula. Ex: [1, 5, 10]
         const imagensParaPular = [23,24,25]; 
 
         for (let i = 1; i <= 40; i++) {
-            
-            // Se o número da imagem atual estiver na lista 'imagensParaPular', o código pula para o próximo número
             if (imagensParaPular.includes(i)) {
                 continue;
             }
 
             const img = document.createElement('img');
-            img.src = `${i}.webp`; /* Alterado para .webp */
+            img.src = `${i}.webp`; 
             img.alt = `Parte ${i}`;
             img.className = 'pagina-print';
-            img.loading = 'lazy'; /* Adicionado o Lazy Loading para velocidade extrema */
+            img.loading = 'lazy'; 
 
-            // REGRA ATUALIZADA: Aplica a borda vermelha se a imagem for da 7 até a 20 OU se for a 31
             if ((i >= 7 && i <= 20) || i === 31) {
                 img.classList.add('borda-feedback');
             }
 
-            // NOVA REGRA: Aplica margin-top de 5px nas imagens 21 e 30
             if (i === 21 || i === 30) {
                 img.style.marginTop = '40px';
             }
@@ -123,12 +129,10 @@
             imageContainer.appendChild(img);
         }
 
-        // 2. Lógica de Envio à prova de falhas (Iframe Oculto) e Rastreamento
+        // 2. Lógica de Envio à prova de falhas e Rastreamento Otimizado
         let enviado = false;
 
         document.getElementById('leadForm').addEventListener('submit', function(e) {
-            // Dispara evento de Lead no Pixel (Isso agora enviará para os DOIS pixels configurados)
-            fbq('track', 'Lead');
             
             const btn = document.getElementById('btn-enviar');
             btn.innerText = 'Buscando...';
@@ -139,24 +143,35 @@
             const telefoneLimpo = telefoneDigitado.replace(/\D/g, '');
             document.getElementById('whatsapp_link').value = telefoneLimpo;
 
+            // 2. SOLUÇÃO DE CORRESPONDÊNCIA AVANÇADA (Aumenta a nota do Pixel)
+            // Formatamos o telefone para o padrão internacional (adicionando 55 do Brasil)
+            let telefoneMeta = telefoneLimpo;
+            if(telefoneMeta.length === 10 || telefoneMeta.length === 11) {
+                telefoneMeta = '55' + telefoneMeta;
+            }
+
+            // Injetamos o dado do usuário nos Pixels ANTES de disparar o evento de Lead
+            fbq('init', '697293479204910', { ph: telefoneMeta });
+            fbq('init', '938321808984476', { ph: telefoneMeta });
+            fbq('init', '968439266148707', { ph: telefoneMeta });
+            fbq('init', '646372628521881', { ph: telefoneMeta });
+            
+            // Dispara evento de Lead com os dados de correspondência anexados
+            fbq('track', 'Lead');
+
             // Avisa o iframe que o envio começou
             enviado = true;
         });
 
         function finalizarEnvio() {
-            // Captura os parâmetros da URL atual (UTMs) para repassar para a Yampi
+            // A sua lógica aqui já está PERFEITA para a API de conversões da Yampi.
+            // Ela pega a URL inteira (com o fbclid) e passa para frente!
             const queryString = window.location.search;
-            
-            // Define o link do checkout da Yampi
             const checkoutBase = "https://transmutarot.pay.yampi.com.br/r/JGFZ2ZW4QC";
-            //const checkoutBase = "https://wa.link/8vey4a";
             
-            // Monta a URL final preservando as tags de campanha
             const urlFinal = queryString ? `${checkoutBase}${queryString}` : checkoutBase;
             
             document.getElementById('msg-sucesso').style.display = 'block';
-            
-            // Redireciona na mesma aba
             window.location.href = urlFinal;
         }
     </script>
