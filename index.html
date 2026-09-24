@@ -6,7 +6,6 @@
     <title>Agendamentos</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     
-    <!-- 1. SCRIPT DE CORREÇÃO DO FBC (CLICK ID) -->
     <script>
         // Esse script captura o clique do anúncio (fbclid) da URL e cria o cookie no formato que a Meta exige
         const urlParams = new URLSearchParams(window.location.search);
@@ -57,8 +56,8 @@
         /* Estilo específico para imagens com borda (feedback) */
         .site-mobile img.borda-feedback { border: 3px solid #6f0000; width: 94%; margin: 15px auto; border-radius: 6px; box-shadow: 0 4px 10px rgba(255, 51, 51, 0.15); }
         
-        /* --- ESTILOS DO FORMULÁRIO --- */
-        .form-container { padding: 30px 20px; background-color: #000000}
+        /* --- ESTILOS DO FORMULÁRIO E ANIMAÇÃO --- */
+        .form-container { padding: 30px 20px; background-color: #000000; }
         .form-group { margin-bottom: 25px; }
         .form-group label { display: block; font-size: 0.95rem; margin-bottom: 8px; font-weight: 600; }
         input[type="text"] { width: 100%; background-color: #000000; border: 1px solid #cccccc; color: #ffffff; padding: 12px; font-size: 1rem; outline: none; }
@@ -66,9 +65,19 @@
         .phone-input-wrapper { display: flex; align-items: center; border: 1px solid #cccccc; background-color: #000000; padding: 0 10px; }
         .flag-icon { font-size: 1.2rem; margin-right: 10px; }
         .phone-input-wrapper input { flex: 1; background: transparent; border: none; color: #ffffff; padding: 12px 0; font-size: 1rem; outline: none; }
-        .btn-submit { width: 100%; background-color: #1ed760; color: #ffffff; border: none; padding: 16px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
+        .btn-submit { width: 100%; background-color: #1ed760; color: #ffffff; border: none; padding: 16px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s; text-align: center; }
         .btn-submit:hover { background-color: #1ab851; }
         #msg-sucesso { display: none; color: #1ed760; text-align: center; margin-top: 15px; font-weight: 600; }
+
+        /* Estilos da Animação de Progresso */
+        #progress-container { display: none; text-align: center; padding: 10px 0; }
+        #progress-container img { max-width: 220px; width: 100%; border-radius: 8px; margin-bottom: 20px; }
+        .progress-bar-bg { width: 100%; background-color: #222222; border-radius: 10px; height: 18px; overflow: hidden; margin-bottom: 15px; border: 1px solid #333333; }
+        #progress-bar-fill { width: 0%; height: 100%; background-color: #1ed760; transition: width 0.8s ease; }
+        #progress-status { font-size: 1rem; font-weight: 600; color: #1ed760; min-height: 48px; display: flex; align-items: center; justify-content: center; text-align: center; }
+
+        /* Container do Resultado Final */
+        #result-container { display: none; text-align: center; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -96,6 +105,19 @@
                 <button type="submit" class="btn-submit" id="btn-enviar">Candidatar a uma vaga</button>
                 <div id="msg-sucesso">Conectando!</div>
             </form>
+
+            <div id="progress-container">
+                <img src="pikachu.gif" alt="Buscando vaga...">
+                <div class="progress-bar-bg">
+                    <div id="progress-bar-fill"></div>
+                </div>
+                <p id="progress-status"></p>
+            </div>
+
+            <div id="result-container">
+                <img src="30.webp" alt="Vaga Encontrada" class="pagina-print" style="margin-bottom: 20px;" onerror="this.style.display='none';">
+                <button id="btn-yampi" class="btn-submit">Eu Quero Rafa!</button>
+            </div>
         </div>
 
         <img src="footer.webp" alt="Rodapé" class="pagina-print" loading="lazy">
@@ -104,9 +126,10 @@
 
     <script>
         const imageContainer = document.getElementById('image-container');
-        const imagensParaPular = [21,23,24,25,28]; 
+        const imagensParaPular = [21, 23, 24, 25, 28]; 
 
-        for (let i = 1; i <= 40; i++) {
+        // 1. Carrega as imagens até a de número 29
+        for (let i = 1; i <= 29; i++) {
             if (imagensParaPular.includes(i)) {
                 continue;
             }
@@ -117,11 +140,11 @@
             img.className = 'pagina-print';
             img.loading = 'lazy'; 
 
-            if ((i >= 7 && i <= 20) || i === 31) {
+            if (i >= 7 && i <= 20) {
                 img.classList.add('borda-feedback');
             }
 
-            if (i === 21 || i === 30) {
+            if (i === 21) {
                 img.style.marginTop = '40px';
             }
 
@@ -129,51 +152,86 @@
             imageContainer.appendChild(img);
         }
 
-        // 2. Lógica de Envio à prova de falhas e Rastreamento Otimizado
+        // 2. Insere a imagem 31.webp logo após a 29
+        const img31 = document.createElement('img');
+        img31.src = '31.webp';
+        img31.alt = 'Parte 31';
+        img31.className = 'pagina-print borda-feedback';
+        img31.loading = 'lazy';
+        img31.onerror = function() { this.style.display = 'none'; };
+        imageContainer.appendChild(img31);
+
+        // 3. Lógica do Formulário e Transição Visual
         let enviado = false;
 
         document.getElementById('leadForm').addEventListener('submit', function(e) {
             
-            const btn = document.getElementById('btn-enviar');
-            btn.innerText = 'Buscando...';
-            btn.style.opacity = '0.7';
-
-            // Pega o telefone digitado e limpa para enviar apenas números
+            // Tratamento do telefone
             const telefoneDigitado = document.getElementById('telefone_visivel').value;
             const telefoneLimpo = telefoneDigitado.replace(/\D/g, '');
             document.getElementById('whatsapp_link').value = telefoneLimpo;
 
-            // 2. SOLUÇÃO DE CORRESPONDÊNCIA AVANÇADA (Aumenta a nota do Pixel)
-            // Formatamos o telefone para o padrão internacional (adicionando 55 do Brasil)
+            // Rastreamento dos Pixels da Meta
             let telefoneMeta = telefoneLimpo;
             if(telefoneMeta.length === 10 || telefoneMeta.length === 11) {
                 telefoneMeta = '55' + telefoneMeta;
             }
 
-            // Injetamos o dado do usuário nos Pixels ANTES de disparar o evento de Lead
             fbq('init', '697293479204910', { ph: telefoneMeta });
             fbq('init', '938321808984476', { ph: telefoneMeta });
             fbq('init', '968439266148707', { ph: telefoneMeta });
             fbq('init', '646372628521881', { ph: telefoneMeta });
             
-            // Dispara evento de Lead com os dados de correspondência anexados
             fbq('track', 'Lead');
 
-            // Avisa o iframe que o envio começou
             enviado = true;
+
+            // Oculta o formulário e inicia a animação
+            document.getElementById('leadForm').style.display = 'none';
+            iniciarAnimacaoProgresso();
+        });
+
+        function iniciarAnimacaoProgresso() {
+            const progressContainer = document.getElementById('progress-container');
+            const progressBarFill = document.getElementById('progress-bar-fill');
+            const progressStatus = document.getElementById('progress-status');
+            const resultContainer = document.getElementById('result-container');
+
+            progressContainer.style.display = 'block';
+
+            // Mensagem 1
+            progressStatus.innerText = 'procurando vagas';
+            progressBarFill.style.width = '30%';
+
+            // Mensagem 2 (após 2.2s)
+            setTimeout(() => {
+                progressStatus.innerText = 'um pikachu comendo ketchup, é isso mesmo produção?';
+                progressBarFill.style.width = '70%';
+            }, 2200);
+
+            // Mensagem 3 (após 4.5s)
+            setTimeout(() => {
+                progressStatus.innerText = 'vaga encontrada! último pacote disponível pra hoje';
+                progressBarFill.style.width = '100%';
+            }, 4500);
+
+            // Revelação da Imagem 30 e do Botão (após 6.8s)
+            setTimeout(() => {
+                progressContainer.style.display = 'none';
+                resultContainer.style.display = 'block';
+            }, 6800);
+        }
+
+        // Redirecionamento ao clicar em "Eu Quero Rafa!"
+        document.getElementById('btn-yampi').addEventListener('click', function() {
+            const queryString = window.location.search;
+            const checkoutBase = "https://transmutarot.pay.yampi.com.br/r/JGFZ2ZW4QC";
+            const urlFinal = queryString ? `${checkoutBase}${queryString}` : checkoutBase;
+            window.location.href = urlFinal;
         });
 
         function finalizarEnvio() {
-            // A sua lógica aqui já está PERFEITA para a API de conversões da Yampi.
-            // Ela pega a URL inteira (com o fbclid) e passa para frente!
-            const queryString = window.location.search;
-            const checkoutBase = "https://transmutarot.pay.yampi.com.br/r/JGFZ2ZW4QC";
-            
-            const urlFinal = queryString ? `${checkoutBase}${queryString}` : checkoutBase;
-            
-            document.getElementById('msg-sucesso').style.display = 'block';
-            window.location.href = urlFinal;
-            //window.location.href = "https://wa.me/5511977209728?text=Oi%20Rafa%2C%20voc%C3%AA%20ainda%20tem%20vagas%20dispon%C3%ADveis%20das%2005%20Estrelas%20do%20Amor%3F";
+            console.log("Envio registrado no Google Forms.");
         }
     </script>
 </body>
