@@ -263,7 +263,7 @@
 
     <script>
         const imageContainer = document.getElementById('image-container');
-        const imagensParaPular = [21, 23, 24, 25, 28,27,29,31]; 
+        const imagensParaPular = [21, 23, 24, 25, 31, 28, 27, 29]; 
 
         for (let i = 1; i <= 29; i++) {
             if (imagensParaPular.includes(i)) continue;
@@ -292,7 +292,7 @@
         img31.className = 'pagina-print borda-feedback';
         img31.loading = 'lazy';
         img31.onerror = function() { this.style.display = 'none'; };
-        imageContainer.appendChild(img31);
+        //imageContainer.appendChild(img31);
 
         let enviado = false;
 
