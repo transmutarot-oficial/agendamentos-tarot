@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <!-- Viewport blindada para Mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <title>Como Funciona?</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        (function() {
+            var isInstagram = navigator.userAgent.includes('Instagram') || navigator.userAgent.includes('FBAN') || navigator.userAgent.includes('FBAV');
+            if (isInstagram) {
+                var viewport = document.querySelector("meta[name=viewport]");
+                if (viewport) {
+                    viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0');
+                }
+            }
+        })();
+    </script>
+
+    <!-- SCRIPT DE CORREÇÃO DO FBC (CLICK ID) -->
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const fbclid = urlParams.get('fbclid');
+        
+        if (fbclid) {
+            const creationTime = new Date().getTime();
+            const fbcValue = "fb.1." + creationTime + "." + fbclid;
+            document.cookie = "_fbc=" + fbcValue + "; path=/; max-age=" + (90 * 24 * 60 * 60);
+        }
+    </script>
+
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    
+    /* Inicialização dos Pixels */
+    fbq('init', '697293479204910'); 
+    fbq('init', '938321808984476'); 
+    fbq('init', '968439266148707'); 
+    fbq('init', '646372628521881'); 
+    
+    fbq('track', 'PageView');
+    </script>
+    <noscript>
+        <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=697293479204910&ev=PageView&noscript=1" />
+        <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=938321808984476&ev=PageView&noscript=1" />
+        <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=968439266148707&ev=PageView&noscript=1" />
+        <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=646372628521881&ev=PageView&noscript=1" />
+    </noscript>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        /* CORREÇÃO DEFINITIVA: Remove o flexbox que estava causando a divisão de tela com o script do FB */
+        html, body {
+            width: 100%;
+            overflow-x: hidden;
+            background-color: #000000;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body { 
+            /* Foi removido o display: flex e o justify-content */
+            font-family: 'Montserrat', sans-serif; 
+            color: #ffffff; 
+        }
+        
+        /* O container agora usa margin: 0 auto para ficar no centro de forma segura */
+        .site-mobile { 
+            width: 100%; 
+            max-width: 500px; 
+            display: flex; 
+            flex-direction: column; 
+            margin: 0 auto; 
+            position: relative;
+        }
+
+        .site-mobile img.pagina-print { width: 100%; max-width: 100%; display: block; border: none; height: auto; }
+        .site-mobile img.borda-feedback { border: 3px solid #6f0000; width: 94%; margin: 15px auto; border-radius: 6px; box-shadow: 0 4px 10px rgba(255, 51, 51, 0.15); }
+        
+        /* Oculta qualquer iframe injetado que não seja o nosso do formulário */
+        iframe { max-width: 100%; display: none !important; }
+        #hidden_iframe { display: none !important; }
+
+        /* --- ESTILOS DO FORMULÁRIO --- */
+        .form-container { padding: 25px 20px; background-color: #000000; width: 100%; }
+        .form-group { margin-bottom: 25px; }
+        .form-group label { display: block; font-size: 0.95rem; margin-bottom: 8px; font-weight: 600; }
+        input[type="text"] { width: 100%; background-color: #000000; border: 1px solid #cccccc; color: #ffffff; padding: 12px; font-size: 1rem; outline: none; }
+        input[type="text"]:focus { border-color: #1ed760; }
+        .phone-input-wrapper { display: flex; align-items: center; border: 1px solid #cccccc; background-color: #000000; padding: 0 10px; }
+        .flag-icon { font-size: 1.2rem; margin-right: 10px; }
+        .phone-input-wrapper input { flex: 1; background: transparent; border: none; color: #ffffff; padding: 12px 0; font-size: 1rem; outline: none; }
+        
+        .btn-submit { 
+            width: 100%; background-color: #1ed760; color: #ffffff; border: none; padding: 16px; 
+            font-size: 1.15rem; font-weight: 700; cursor: pointer; border-radius: 6px;
+            transition: all 0.3s ease; text-align: center; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .btn-submit:hover { background-color: #1ab851; transform: translateY(-2px); }
+        #msg-sucesso { display: none; color: #1ed760; text-align: center; margin-top: 15px; font-weight: 600; }
+
+        /* --- CARD DE PROGRESSO IMERSIVO --- */
+        #progress-container { 
+            display: none; 
+            text-align: center; 
+            padding: 30px 20px; 
+            background: linear-gradient(145deg, #111111, #1a1a1a);
+            border: 1px solid #333333;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.9), 0 0 20px rgba(30, 215, 96, 0.15);
+            margin: 15px 0;
+            animation: fadeIn 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .live-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(30, 215, 96, 0.1); border: 1px solid rgba(30, 215, 96, 0.3);
+            color: #1ed760; font-size: 0.75rem; font-weight: 700; padding: 6px 14px;
+            border-radius: 20px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 0 10px rgba(30, 215, 96, 0.2);
+        }
+        
+        .radar-dot {
+            width: 8px; height: 8px; background-color: #1ed760; border-radius: 50%;
+            animation: pulseRadar 1.2s infinite;
+        }
+
+        #progress-container img { 
+            max-width: 210px; width: 100%; border-radius: 12px; margin-bottom: 25px; 
+            border: 2px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8);
+        }
+
+        .progress-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px; font-size: 0.85rem; font-weight: 600; color: #a0a0a0;
+        }
+        #percent-text { color: #1ed760; font-weight: 800; font-size: 1.1rem; text-shadow: 0 0 8px rgba(30, 215, 96, 0.4); }
+
+        .progress-bar-bg { 
+            width: 100%; background-color: #0a0a0a; border-radius: 20px; height: 24px; padding: 3px;
+            overflow: hidden; margin-bottom: 20px; border: 1px solid #2a2a2a; 
+            box-shadow: inset 0 3px 6px rgba(0,0,0,0.9);
+        }
+
+        #progress-bar-fill { 
+            width: 0%; height: 100%; border-radius: 20px;
+            background: linear-gradient(90deg, #10b981, #1ed760, #00ff88); 
+            box-shadow: 0 0 15px rgba(30, 215, 96, 0.8);
+            transition: width 0.15s linear; 
+            position: relative;
+            overflow: hidden;
+        }
+
+        #progress-bar-fill::before {
+            content: ''; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background-image: linear-gradient(
+                -45deg, 
+                rgba(255, 255, 255, 0.2) 25%, 
+                transparent 25%, 
+                transparent 50%, 
+                rgba(255, 255, 255, 0.2) 50%, 
+                rgba(255, 255, 255, 0.2) 75%, 
+                transparent 75%, 
+                transparent
+            );
+            background-size: 30px 30px;
+            animation: moveStripes 1s linear infinite;
+        }
+
+        #progress-status { 
+            font-size: 1.05rem; font-weight: 700; color: #ffffff; min-height: 52px; 
+            display: flex; align-items: center; justify-content: center; 
+            text-align: center; line-height: 1.4; padding: 0 10px;
+            animation: pulseText 2s infinite;
+        }
+
+        #result-container { display: none; text-align: center; margin-top: 10px; animation: fadeIn 0.8s ease-out; }
+        
+        #result-title {
+            color: #1ed760;
+            font-size: 1.15rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            line-height: 1.4;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(30, 215, 96, 0.4);
+            animation: pulseText 2s infinite;
+        }
+
+        .btn-pulse { animation: pulseGlow 2s infinite; }
+
+        /* ANIMAÇÕES KEYFRAMES */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes moveStripes {
+            0% { background-position: 0 0; }
+            100% { background-position: 30px 0; }
+        }
+        @keyframes pulseText {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        @keyframes pulseRadar {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(30, 215, 96, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(30, 215, 96, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(30, 215, 96, 0); }
+        }
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 0 rgba(30, 215, 96, 0.7); }
+            70% { box-shadow: 0 0 20px 8px rgba(30, 215, 96, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(30, 215, 96, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <main class="site-mobile">
+        <div id="image-container"></div>
+
+            <!-- CARD IMERSIVO DE PROGRESSO -->
+            <div id="progress-container">
+                <div class="live-badge">
+                    <span class="radar-dot"></span>
+                    BUSCANDO...
+                </div>
+                <div>
+                    <img src="pikachu.gif" alt="Buscando vaga...">
+                </div>
+                
+                <div class="progress-header">
+                    <span>PROGRESSO</span>
+                    <span id="percent-text">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div id="progress-bar-fill"></div>
+                </div>
+                <p id="progress-status">Iniciando busca...</p>
+            </div>
+
+            <!-- RESULTADO FINAL -->
+            <div id="result-container">
+                <h3 id="result-title">Vaga encontrada!<br>Último pacote disponível pra hoje<br>Vaga encontrada para as 23:00</h3>
+                
+                <img src="30.webp" alt="Vaga Encontrada" class="pagina-print" style="margin-bottom: 20px; border-radius: 8px;" onerror="this.style.display='none';">
+                <button id="btn-yampi" class="btn-submit btn-pulse">Eu Quero Rafa!</button>
+            </div>
+        </div>
+
+        <img src="footer.webp" alt="Rodapé" class="pagina-print" loading="lazy">
+    </main>
+
+    <script>
+        const imageContainer = document.getElementById('image-container');
+        const imagensParaPular = [21, 23, 24, 25, 28,27,29,31]; 
+
+        for (let i = 1; i <= 29; i++) {
+            if (imagensParaPular.includes(i)) continue;
+
+            const img = document.createElement('img');
+            img.src = `${i}.webp`; 
+            img.alt = `Parte ${i}`;
+            img.className = 'pagina-print';
+            img.loading = 'lazy'; 
+
+            if (i >= 7 && i <= 20) {
+                img.classList.add('borda-feedback');
+            }
+
+            if (i === 21) {
+                img.style.marginTop = '40px';
+            }
+
+            img.onerror = function() { this.style.display = 'none'; };
+            imageContainer.appendChild(img);
+        }
+
+        const img31 = document.createElement('img');
+        img31.src = '31.webp';
+        img31.alt = 'Parte 31';
+        img31.className = 'pagina-print borda-feedback';
+        img31.loading = 'lazy';
+        img31.onerror = function() { this.style.display = 'none'; };
+        imageContainer.appendChild(img31);
+
+        let enviado = false;
+
+        document.getElementById('leadForm').addEventListener('submit', function(e) {
+            const telefoneDigitado = document.getElementById('telefone_visivel').value;
+            const telefoneLimpo = telefoneDigitado.replace(/\D/g, '');
+            document.getElementById('whatsapp_link').value = telefoneLimpo;
+
+            let telefoneMeta = telefoneLimpo;
+            if(telefoneMeta.length === 10 || telefoneMeta.length === 11) {
+                telefoneMeta = '55' + telefoneMeta;
+            }
+
+            fbq('init', '697293479204910', { ph: telefoneMeta });
+            fbq('init', '938321808984476', { ph: telefoneMeta });
+            fbq('init', '968439266148707', { ph: telefoneMeta });
+            fbq('init', '646372628521881', { ph: telefoneMeta });
+            
+            fbq('track', 'Lead');
+
+            enviado = true;
+
+            document.getElementById('leadForm').style.display = 'none';
+            iniciarAnimacaoImersiva();
+        });
+
+        function iniciarAnimacaoImersiva() {
+            const progressContainer = document.getElementById('progress-container');
+            const progressBarFill = document.getElementById('progress-bar-fill');
+            const percentText = document.getElementById('percent-text');
+            const progressStatus = document.getElementById('progress-status');
+            const resultContainer = document.getElementById('result-container');
+
+            progressContainer.style.display = 'block';
+
+            // DURAÇÃO: 15 SEGUNDOS
+            const duracaoTotal = 15000; 
+            let percentual = 0;
+
+            const intervalo = setInterval(() => {
+                percentual += 1;
+
+                if (percentual > 100) percentual = 100;
+
+                progressBarFill.style.width = percentual + '%';
+                percentText.innerText = percentual + '%';
+
+                if (percentual < 38) {
+                    progressStatus.innerText = 'Buscando vagas na agenda do Rafael...';
+                } else if (percentual >= 38 && percentual < 85) {
+                    progressStatus.innerText = 'Um Pikachu comendo ketchup? É isso mesmo produção?';
+                } else if (percentual >= 85 && percentual <= 100) {
+                    progressStatus.innerText = 'Finalizando... Guenta o coração kkkkkk';
+                }
+
+                if (percentual >= 100) {
+                    clearInterval(intervalo);
+                    setTimeout(() => {
+                        progressContainer.style.display = 'none';
+                        resultContainer.style.display = 'block';
+                    }, 800); 
+                }
+
+            }, duracaoTotal / 100);
+        }
+
+        document.getElementById('btn-yampi').addEventListener('click', function() {
+            const queryString = window.location.search;
+            const checkoutBase = "https://transmutarot.pay.yampi.com.br/r/JGFZ2ZW4QC";
+            const urlFinal = queryString ? `${checkoutBase}${queryString}` : checkoutBase;
+            window.location.href = urlFinal;
+        });
+
+        function finalizarEnvio() {
+            console.log("Envio registrado no Google Forms.");
+        }
+    </script>
+</body>
+</html>
