@@ -296,6 +296,8 @@
             
             // Revela o resto do site (o script já vai ter carregado as imagens abaixo)
             document.getElementById('restante-site').style.display = 'block';
+            // 3. Rola a tela de volta para o topo (onde está a 1.webp)
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
         const imageContainer = document.getElementById('image-container');
