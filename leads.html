@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Leads - Tarot</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1a1a2e; color: #fff; padding: 20px; }
+        .container { max-width: 700px; margin: 0 auto; background-color: #16213e; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h1 { color: #e94560; text-align: center; font-size: 24px; }
+        .instructions { background-color: #0f3460; padding: 15px; border-radius: 8px; font-size: 14px; margin-bottom: 20px; text-align: center; }
+        button { width: 100%; background-color: #e94560; color: white; border: none; padding: 12px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; margin-bottom: 20px; }
+        button:hover { background-color: #d13d56; }
+        .lead-card { background-color: #0f3460; border-left: 5px solid #e94560; padding: 15px; margin-top: 15px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .lead-info { margin-bottom: 10px; }
+        .lead-info p { margin: 5px 0; font-size: 15px; }
+        .whatsapp-btn { background-color: #25D366; color: white; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; display: inline-block; transition: 0.3s; }
+        .whatsapp-btn:hover { background-color: #128C7E; }
+        .empty-state { text-align: center; margin-top: 20px; font-style: italic; color: #aaa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔮 Leads do Dia - Tiragem 5 Estrelas</h1>
+        
+        <div class="instructions">
+            <p>Clique no botão abaixo para ver as interessadas de hoje.</p>
+        </div>
+
+        <button onclick="carregarLeads()">Buscar Leads de Hoje</button>
+        
+        <div id="leadsContainer"></div>
+    </div>
+
+    <script>
+        // Novo link atualizado
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQUCRqIfEk3e-Pxma_GzUHd0As-TNp5VBtMDKOLJ-im2vIxlnohh-SyFdoCzh3X78LPOMwVQeBPMx5z/pub?output=csv';
+        
+        // Usando o endpoint /get que envelopa em JSON e evita o erro 520 e o bloqueio CORS de arquivos locais
+        const PROXY_URL = 'https://api.allorigins.win/get?url=' + encodeURIComponent(CSV_URL);
+
+        async function carregarLeads() {
+            const container = document.getElementById('leadsContainer');
+            container.innerHTML = '<p class="empty-state">Buscando leads...</p>';
+
+            try {
+                const response = await fetch(PROXY_URL);
+                if (!response.ok) throw new Error("Falha no download através do proxy");
+                
+                const data = await response.json();
+                
+                if (data.contents) {
+                    processarCSV(data.contents);
+                } else {
+                    throw new Error("Conteúdo vazio retornado pelo proxy");
+                }
+                
+            } catch (error) {
+                container.innerHTML = '';
+                alert("Erro ao carregar! Verifique o console para mais detalhes.");
+                console.error("Erro completo:", error);
+            }
+        }
+
+        function processarCSV(csvText) {
+            const linhas = csvText.split(/\r?\n/);
+            const container = document.getElementById('leadsContainer');
+            container.innerHTML = '';
+
+            const hoje = new Date().toLocaleDateString('pt-BR'); 
+            let count = 0;
+            
+            const separador = linhas[0].includes(';') ? ';' : ',';
+
+            for (let i = 1; i < linhas.length; i++) {
+                if (!linhas[i].trim()) continue;
+                
+                const colunas = linhas[i].split(separador);
+                
+                if (colunas.length >= 3) {
+                    const dataHora = colunas[0].replace(/"/g, '').trim();
+                    let nome = colunas[1].replace(/"/g, '').trim();
+                    let whatsapp = colunas[2].replace(/"/g, '').trim();
+
+                    if (dataHora.startsWith(hoje)) {
+                        count++;
+                        
+                        let numLimpo = whatsapp.replace(/\D/g, '');
+                        if (numLimpo.length === 10 || numLimpo.length === 11) {
+                            numLimpo = '55' + numLimpo;
+                        }
+
+                        const primeiroNome = nome.split(' ')[0];
+                        
+                        const mensagem = `Boa noite ${primeiroNome}! Notificou aqui pra mim no meu site que você tinha se interessado na minha tiragem pra hoje, das 05 estrelas do amor por R$45. Ainda tenho o último horário do dia disponível, e pra fechar minha agenda pra hoje, faço até por R$29 no pix se ainda tiver interesse, e ai eu enviaria a tiragem aqui já pronta umas 23:30. \n\nTô chamando agora aqui no whats você e outra duas meninas que também tinham se interessado nesse último pacote do dia, me avisa aqui se tiver interesse que ela é sua. Se não eu repasso pra outras meninas sem problemas, é que você colocou seu numero antes delas no site, então vim aqui primeiro kkkkkkk`;
+                        
+                        const linkWa = `https://wa.me/${numLimpo}?text=${encodeURIComponent(mensagem)}`;
+
+                        const card = document.createElement('div');
+                        card.className = 'lead-card';
+                        card.innerHTML = `
+                            <div class="lead-info">
+                                <p><strong>👤 ${nome}</strong></p>
+                                <p>🕒 ${dataHora}</p>
+                                <p>📱 ${numLimpo}</p>
+                            </div>
+                            <a href="${linkWa}" target="_blank" class="whatsapp-btn">💬 Chamar no Whats</a>
+                        `;
+                        container.appendChild(card);
+                    }
+                }
+            }
+
+            if (count === 0) {
+                container.innerHTML = `<p class="empty-state">Nenhum lead encontrado para a data de hoje (${hoje}).</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
