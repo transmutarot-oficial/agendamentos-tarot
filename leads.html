@@ -24,7 +24,7 @@
         <h1>🔮 Leads do Dia - Tiragem 5 Estrelas</h1>
         
         <div class="instructions">
-            <p>Clique no botão abaixo para ver as interessadas de hoje.</p>
+            <p>Clique no botão abaixo para carregar e ordenar as interessadas de hoje.</p>
         </div>
 
         <button onclick="carregarLeads()">Buscar Leads de Hoje</button>
@@ -33,6 +33,7 @@
     </div>
 
     <script>
+        // Link direto da planilha!
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQUCRqIfEk3e-Pxma_GzUHd0As-TNp5VBtMDKOLJ-im2vIxlnohh-SyFdoCzh3X78LPOMwVQeBPMx5z/pub?gid=111972384&single=true&output=csv';
 
         async function carregarLeads() {
@@ -53,90 +54,87 @@
             }
         }
 
-        // Função robusta para ler o CSV ignorando vírgulas dentro de textos
-        function parseCSVLine(text) {
-            let result = [];
-            let curVal = '';
-            let inQuotes = false;
-            for (let i = 0; i < text.length; i++) {
-                let char = text[i];
-                if (inQuotes) {
-                    if (char === '"') {
-                        if (i < text.length - 1 && text[i+1] === '"') {
-                            curVal += '"';
-                            i++;
-                        } else {
-                            inQuotes = false;
-                        }
-                    } else {
-                        curVal += char;
-                    }
-                } else {
-                    if (char === '"') {
-                        inQuotes = true;
-                    } else if (char === ',') {
-                        result.push(curVal.trim());
-                        curVal = '';
-                    } else {
-                        curVal += char;
-                    }
-                }
-            }
-            result.push(curVal.trim());
-            return result;
-        }
-
         function processarCSV(csvText) {
             const linhas = csvText.split(/\r?\n/);
             const container = document.getElementById('leadsContainer');
             container.innerHTML = '';
 
-            if (linhas.length < 1) {
-                container.innerHTML = '<p class="empty-state">O arquivo CSV parece estar vazio.</p>';
-                return;
-            }
-
-            // Ler a primeira linha (cabeçalhos) para descobrir a posição correta das colunas
-            const headers = parseCSVLine(linhas[0]).map(h => h.toLowerCase());
-            
-            const dataIdx = headers.findIndex(h => h.includes('carimbo') || h.includes('data') || h.includes('hora'));
-            const nomeIdx = headers.findIndex(h => h.includes('nome'));
-            const whatsIdx = headers.findIndex(h => h.includes('whatsapp') || h.includes('whats'));
-
-            // Caso ele não ache o nome exato, cai pro padrão 0, 1, 2
-            const idxCarimbo = dataIdx !== -1 ? dataIdx : 0;
-            const idxNome = nomeIdx !== -1 ? nomeIdx : 1;
-            const idxWhats = whatsIdx !== -1 ? whatsIdx : 2;
-
             const hoje = new Date().toLocaleDateString('pt-BR'); 
             let leadsDoDia = [];
+
+            // 1) Novo Leitor de CSV Inteligente para não quebrar com vírgulas extras do Google
+            function parseCSVLine(str) {
+                var arr = [];
+                var quote = false;
+                var col = '';
+                var sep = linhas[0].includes(';') ? ';' : ','; 
+                for (var i = 0; i < str.length; i++) {
+                    var cc = str[i], nc = str[i+1];
+                    // Pula as aspas que estão escapando outras aspas
+                    if (cc === '"' && quote && nc === '"') { col += '"'; i++; continue; }
+                    // Alterna o estado de estar dentro ou fora de aspas
+                    if (cc === '"') { quote = !quote; continue; }
+                    // Se achou o separador e NÃO está dentro de aspas, corta a coluna
+                    if (cc === sep && !quote) { arr.push(col.trim()); col = ''; continue; }
+                    col += cc;
+                }
+                arr.push(col.trim());
+                // Remove aspas nas bordas caso tenha sobrado
+                return arr.map(c => c.replace(/^"|"$/g, '').trim());
+            }
+
+            // Garante que estamos pegando a coluna certa, independente da ordem
+            const cabecalho = parseCSVLine(linhas[0].toLowerCase());
+            let idxData = cabecalho.findIndex(c => c.includes('data') || c.includes('carimbo'));
+            let idxNome = cabecalho.findIndex(c => c.includes('nome'));
+            let idxWhats = cabecalho.findIndex(c => c.includes('whatsapp') || c.includes('whats'));
+
+            // Fallback caso ele não consiga ler o cabeçalho direito
+            if(idxData === -1) idxData = 0;
+            if(idxNome === -1) idxNome = 1;
+            if(idxWhats === -1) idxWhats = 2;
 
             for (let i = 1; i < linhas.length; i++) {
                 if (!linhas[i].trim()) continue;
                 
                 const colunas = parseCSVLine(linhas[i]);
                 
-                if (colunas.length > Math.max(idxCarimbo, idxNome, idxWhats)) {
-                    const dataHora = colunas[idxCarimbo] ? colunas[idxCarimbo] : '';
-                    const nome = colunas[idxNome] ? colunas[idxNome] : '';
-                    const whatsapp = colunas[idxWhats] ? colunas[idxWhats] : '';
+                if (colunas.length > idxWhats) {
+                    const dataHora = colunas[idxData];
+                    let nome = colunas[idxNome];
+                    let whatsapp = colunas[idxWhats];
 
-                    // Filtra apenas os do dia de hoje
-                    if (dataHora.startsWith(hoje)) {
+                    // Verifica se a data contém a data de hoje
+                    if (dataHora && dataHora.includes(hoje)) {
+                        
+                        let numLimpo = whatsapp ? whatsapp.replace(/\D/g, '') : '';
+                        if (numLimpo.length === 10 || numLimpo.length === 11) {
+                            numLimpo = '55' + numLimpo;
+                        }
+
+                        const primeiroNome = nome ? nome.split(' ')[0] : 'Lindona';
+                        
+                        // Extrai a hora exata da coluna pra podermos ordenar
+                        let matchHora = dataHora.match(/\d{2}:\d{2}(:\d{2})?/);
+                        let horaString = matchHora ? matchHora[0] : "00:00:00";
+                        
+                        // Salva os dados na nossa lista ao invés de já jogar na tela
                         leadsDoDia.push({
-                            dataHora: dataHora,
-                            nome: nome,
-                            whatsapp: whatsapp
+                            dataHoraOriginal: dataHora,
+                            horaString: horaString,
+                            nome: nome || 'Sem nome',
+                            primeiroNome: primeiroNome,
+                            whatsappLimpo: numLimpo
                         });
                     }
                 }
             }
 
-            // Ordena a lista de leads: das mais antigas (mais cedo) para as mais recentes (mais tarde)
+            // 3) Ordem cronológica: das mais antigas (cedo) para as mais novas (tarde) descendo pra baixo
             leadsDoDia.sort((a, b) => {
-                let horaA = a.dataHora.split(' ')[1] || '00:00:00';
-                let horaB = b.dataHora.split(' ')[1] || '00:00:00';
-                return horaA.localeCompare(horaB);
+                if (a.horaString < b.horaString) return -1;
+                if (a.horaString > b.horaString) return 1;
+                return 0;
             });
 
             if (leadsDoDia.length === 0) {
@@ -144,33 +142,20 @@
                 return;
             }
 
-            // Renderiza na tela
+            // Gera os bloquinhos HTML na tela baseados na lista ordenada
             leadsDoDia.forEach(lead => {
-                let numLimpo = lead.whatsapp.replace(/\D/g, '');
+                const mensagem = `Boa noite ${lead.primeiroNome}! Notificou aqui pra mim no meu site que você tinha se interessado na minha tiragem pra hoje, das 05 estrelas do amor por R$45. Ainda tenho o último horário do dia disponível, e pra fechar minha agenda pra hoje, faço até por R$29 no pix se ainda tiver interesse, e ai eu enviaria a tiragem aqui já pronta umas 23:30. \n\nTô chamando agora aqui no whats você e outra duas meninas que também tinham se interessado nesse último pacote do dia, me avisa aqui se tiver interesse que ela é sua. Se não eu repasso pra outras meninas sem problemas, é que você colocou seu numero antes delas no site, então vim aqui primeiro kkkkkkk`;
                 
-                // Se faltar o 55, adiciona
-                if (numLimpo.length === 10 || numLimpo.length === 11) {
-                    numLimpo = '55' + numLimpo;
-                }
-
-                // Extrair primeiro nome
-                let primeiroNome = "Moça";
-                if (lead.nome) {
-                    primeiroNome = lead.nome.split(' ')[0];
-                }
-                
-                const mensagem = `Boa noite ${primeiroNome}! Notificou aqui pra mim no meu site que você tinha se interessado na minha tiragem pra hoje, das 05 estrelas do amor por R$45. Ainda tenho o último horário do dia disponível, e pra fechar minha agenda pra hoje, faço até por R$29 no pix se ainda tiver interesse, e ai eu enviaria a tiragem aqui já pronta umas 23:30. \n\nTô chamando agora aqui no whats você e outra duas meninas que também tinham se interessado nesse último pacote do dia, me avisa aqui se tiver interesse que ela é sua. Se não eu repasso pra outras meninas sem problemas, é que você colocou seu numero antes delas no site, então vim aqui primeiro kkkkkkk`;
-                
-                // api.whatsapp.com é mais confiável que wa.me para todos os dispositivos
-                const linkWa = `https://api.whatsapp.com/send?phone=${numLimpo}&text=${encodeURIComponent(mensagem)}`;
+                // 2) Criação corrigida do link do Whats com o numero limpo
+                const linkWa = `https://wa.me/${lead.whatsappLimpo}?text=${encodeURIComponent(mensagem)}`;
 
                 const card = document.createElement('div');
                 card.className = 'lead-card';
                 card.innerHTML = `
                     <div class="lead-info">
-                        <p><strong>👤 ${lead.nome || 'Sem Nome'}</strong></p>
-                        <p>🕒 ${lead.dataHora}</p>
-                        <p>📱 ${numLimpo}</p>
+                        <p><strong>👤 ${lead.nome}</strong></p>
+                        <p>🕒 ${lead.dataHoraOriginal}</p>
+                        <p>📱 ${lead.whatsappLimpo}</p>
                     </div>
                     <a href="${linkWa}" target="_blank" class="whatsapp-btn">💬 Chamar no Whats</a>
                 `;
