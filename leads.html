@@ -33,27 +33,20 @@
     </div>
 
     <script>
-        // Novo link atualizado
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQUCRqIfEk3e-Pxma_GzUHd0As-TNp5VBtMDKOLJ-im2vIxlnohh-SyFdoCzh3X78LPOMwVQeBPMx5z/pub?output=csv';
-        
-        // Usando o endpoint /get que envelopa em JSON e evita o erro 520 e o bloqueio CORS de arquivos locais
-        const PROXY_URL = 'https://api.allorigins.win/get?url=' + encodeURIComponent(CSV_URL);
+        // Link direto da planilha! Sem proxy.
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQUCRqIfEk3e-Pxma_GzUHd0As-TNp5VBtMDKOLJ-im2vIxlnohh-SyFdoCzh3X78LPOMwVQeBPMx5z/pub?gid=111972384&single=true&output=csv';
 
         async function carregarLeads() {
             const container = document.getElementById('leadsContainer');
             container.innerHTML = '<p class="empty-state">Buscando leads...</p>';
 
             try {
-                const response = await fetch(PROXY_URL);
-                if (!response.ok) throw new Error("Falha no download através do proxy");
+                // Como está no GitHub Pages, o Google Sheets não bloqueia mais o CORS.
+                const response = await fetch(CSV_URL);
+                if (!response.ok) throw new Error("Falha no download da planilha");
                 
-                const data = await response.json();
-                
-                if (data.contents) {
-                    processarCSV(data.contents);
-                } else {
-                    throw new Error("Conteúdo vazio retornado pelo proxy");
-                }
+                const text = await response.text();
+                processarCSV(text);
                 
             } catch (error) {
                 container.innerHTML = '';
