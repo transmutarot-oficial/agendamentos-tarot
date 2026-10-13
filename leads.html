@@ -16,7 +16,13 @@
         .lead-info p { margin: 5px 0; font-size: 15px; }
         .whatsapp-btn { background-color: #25D366; color: white; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; display: inline-block; transition: 0.3s; }
         .whatsapp-btn:hover { background-color: #128C7E; }
+        /* Nova classe para quando o botão for clicado (Fica Vermelho) */
+        .whatsapp-btn.chamado { background-color: #dc3545 !important; }
+        .whatsapp-btn.chamado:hover { background-color: #c82333 !important; }
+        
         .empty-state { text-align: center; margin-top: 20px; font-style: italic; color: #aaa; }
+        /* Estilo do contador */
+        .contador-box { background-color: #0f3460; border: 1px solid #e94560; color: #e94560; padding: 15px; border-radius: 8px; text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -61,6 +67,7 @@
 
             const hoje = new Date().toLocaleDateString('pt-BR'); 
             let leadsDoDia = [];
+            let telefonesUnicos = new Set(); // SET para rastrear números únicos e não contar duplicatas!
 
             // 1) Novo Leitor de CSV Inteligente para não quebrar com vírgulas extras do Google
             function parseCSVLine(str) {
@@ -111,6 +118,11 @@
                         if (numLimpo.length === 10 || numLimpo.length === 11) {
                             numLimpo = '55' + numLimpo;
                         }
+                        
+                        // Adiciona o número limpo ao SET (se o número já existir, o SET ignora automaticamente, não duplicando)
+                        if (numLimpo) {
+                            telefonesUnicos.add(numLimpo);
+                        }
 
                         const primeiroNome = nome ? nome.split(' ')[0] : 'Lindona';
                         
@@ -130,15 +142,19 @@
                 }
             }
 
-            // 3) Ordem cronológica: das mais antigas (cedo) para as mais novas (tarde) descendo pra baixo
+            // (1) ALTERAÇÃO DE ORDEM: De cima para baixo (do mais recente/tarde pro mais cedo)
             leadsDoDia.sort((a, b) => {
-                if (a.horaString < b.horaString) return -1;
-                if (a.horaString > b.horaString) return 1;
+                if (a.horaString < b.horaString) return 1;  // Invertido o 1 com -1
+                if (a.horaString > b.horaString) return -1;
                 return 0;
             });
+            
+            // (3) ALTERAÇÃO: Contador de leads totais sem duplicatas
+            const totalLeadsUnicos = telefonesUnicos.size;
+            container.innerHTML = `<div class="contador-box">🚀 Total de Leads Únicos Hoje: ${totalLeadsUnicos}</div>`;
 
             if (leadsDoDia.length === 0) {
-                container.innerHTML = `<p class="empty-state">Nenhum lead encontrado para a data de hoje (${hoje}).</p>`;
+                container.innerHTML += `<p class="empty-state">Nenhum lead encontrado para a data de hoje (${hoje}).</p>`;
                 return;
             }
 
@@ -146,7 +162,7 @@
             leadsDoDia.forEach(lead => {
                 const mensagem = `Boa noite ${lead.primeiroNome}! Notificou aqui pra mim no meu site que você tinha se interessado na minha tiragem pra hoje, das 05 estrelas do amor por R$45. Ainda tenho o último horário do dia disponível, e pra fechar minha agenda pra hoje, faço até por R$29 no pix se ainda tiver interesse, e ai eu enviaria a tiragem aqui já pronta umas 23:30. \n\nTô chamando agora aqui no whats você e outra duas meninas que também tinham se interessado nesse último pacote do dia, me avisa aqui se tiver interesse que ela é sua. Se não eu repasso pra outras meninas sem problemas, é que você colocou seu numero antes delas no site, então vim aqui primeiro kkkkkkk`;
                 
-                // 2) Criação corrigida do link do Whats com o numero limpo
+                // Criação corrigida do link do Whats com o numero limpo
                 const linkWa = `https://wa.me/${lead.whatsappLimpo}?text=${encodeURIComponent(mensagem)}`;
 
                 const card = document.createElement('div');
@@ -157,7 +173,8 @@
                         <p>🕒 ${lead.dataHoraOriginal}</p>
                         <p>📱 ${lead.whatsappLimpo}</p>
                     </div>
-                    <a href="${linkWa}" target="_blank" class="whatsapp-btn">💬 Chamar no Whats</a>
+                    <!-- (2) ALTERAÇÃO: onclick que adiciona a classe 'chamado' para o botão ficar vermelho -->
+                    <a href="${linkWa}" target="_blank" class="whatsapp-btn" onclick="this.classList.add('chamado'); this.innerHTML='✓ Whats Chamado';">💬 Chamar no Whats</a>
                 `;
                 container.appendChild(card);
             });
